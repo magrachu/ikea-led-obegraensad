@@ -23,7 +23,7 @@
 #include "plugins/SnakePlugin.h"
 #include "plugins/StarsPlugin.h"
 #include "plugins/PongClockPlugin.h"
-
+#include "plugins/PerlinPlugin.h"
 #ifdef ENABLE_SERVER
 #include "plugins/AnimationPlugin.h"
 #include "plugins/BigClockPlugin.h"
@@ -175,7 +175,7 @@ void setup()
   pluginManager.addPlugin(new RainPlugin());
   pluginManager.addPlugin(new FireworkPlugin());
   pluginManager.addPlugin(new PongClockPlugin());
-
+pluginManager.addPlugin(new PerlinPlugin());
 #ifdef ENABLE_SERVER
   pluginManager.addPlugin(new BigClockPlugin());
   pluginManager.addPlugin(new ClockPlugin());
