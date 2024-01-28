@@ -14,6 +14,7 @@ vec4 mix(vec4 x,vec4 y,float a){
 }
 
 
+
 float step(float edge, float x) {
   float v;
   (x<edge) ? v= 0.0 : v= 1.0;
@@ -25,8 +26,8 @@ vec4 step(float edge, vec4 x){
 }
 
 
-vec4 step(vec4 e, vec4 x){
-  return vec4(step(e.x,x.x),step(e.y,x.y),step(e.z,x.z),step(e.w,x.w));
+vec4 step(vec4 edge, vec4 x){
+  return vec4(step(edge.x,x.x),step(edge.y,x.y),step(edge.z,x.z),step(edge.w,x.w));
 }
 
 
@@ -152,13 +153,23 @@ float cnoise(vec3 P){
   return 2.2 * n_xyz;
 }
 
+float limit(float low, float val, float high){
+  if (val < low){
+    return low;
+  }
+  if (val > high) {
+    return high;
+  }
+  return val;
+}
 
+float currentTime_old;
 
 void PerlinPlugin::setup()
 {
-
+  Screen.clear();
   // run tests
-
+  currentTime_old = millis()*0.001;
   float testval[5] = {0,0.1,0.5,1.0,2.0};
   float goalval[5]= {0,0.4499,9.0,35.0,138.0};
 
@@ -178,7 +189,7 @@ Serial.println("test taylorInvSqrt:");
   }
 
   float testval3[8] = {0,0.1,0.2,0.5,0.6,1.0,1.5,10.5};
-  float goalval3[8]= {0.0,0.008559,0.057919,0.6,0.682559,1.0,3.375,595019.25};
+  float goalval3[8]= {0.0,0.008559,0.057919,0.5,0.682559,1.0,3.375,595019.25};
 Serial.println("test fade:");
   for(int i=0;i<8;i++){
     Serial.printf("testval= %f, result= %f, expected %f\n",testval3[i],fade(vec3(testval3[i])).x,goalval3[i]);
@@ -192,6 +203,26 @@ Serial.println("test fade:");
     Serial.printf("testval= %f, result= %f, expected %f\n",testval4[i],cnoise(testval4[i]),goalval4[i]);
 
   }
+
+const int numVal5=3;
+  vec4 testval5[numVal5] = {vec4(5.2),vec4(10.9),vec4(-10.4)};
+  float goalval5[numVal5]= {0.2,0.9,0.6};
+  Serial.println("test fract:");
+  for(int i=0;i<numVal5;i++){
+    Serial.printf("testval= %f, result= %f, expected %f\n",testval5[i].x,fract(testval5[i]).x,goalval5[i]);
+
+  }
+
+
+  const int numVal6=10;
+  vec3 testval6[numVal6] = {vec3(10.1,9.9,0.0),vec3(10.1,9.9,1.0),vec3(10.1,9.9,2.0),vec3(10.1,9.9,3.0),vec3(10.1,9.9,4.0),vec3(0.2,9.5,0.5),vec3(0.2,9.5,1.5),vec3(0.2,9.5,2.5),vec3(0.2,9.5,3.5),vec3(0.2,9.5,4.5),};
+  float goalval6[numVal6]= {0.0899,0.015091,0.103821,0.169510,0.121684,0.202738,-0.259893,0.140048,-0.193751,0.153087};
+  Serial.println("test cnoise:");
+  for(int i=0;i<numVal6;i++){
+    Serial.printf("testval= %f, result= %f, expected %f\n",testval6[i].z,cnoise(testval6[i]),goalval6[i]);
+
+  }
+
 }
 
 //#define debug
@@ -201,16 +232,17 @@ void PerlinPlugin::loop()
     Serial.println("perlinpattern");
   #endif
   
-  float currentTime = millis()*0.001;
+  float currentTime = 2*millis()*0.001;
   for(int x=0; x<COLS;x++){
     
     for(int y=0; y<ROWS;y++){
-      noiseval=cnoise(vec3(x*0.25,y*0.4,currentTime*0.1));
+      noiseval=(cnoise(vec3(x*0.25,y*0.4,currentTime*0.1))+1.0)*0.5;
+
       const float lim=1.0;
       #ifdef debug
     Serial.printf("%.2f, ",noiseval);
   #endif
-      
+      noiseval=limit(0.0,noiseval-0.1,1.0);
       brightness=min(noiseval*noiseval,lim)*255;
        Screen.setPixel(x, y, 1, brightness);
 
@@ -218,6 +250,10 @@ void PerlinPlugin::loop()
 
 
     }
+    currentTime = millis()*0.001;
+    //Serial.printf(": %f\n",currentTime-currentTime_old);
+    currentTime_old= currentTime;
+    // delay(1);
     #ifdef debug
     Serial.printf(": %d\n",x);
   #endif
@@ -226,7 +262,7 @@ void PerlinPlugin::loop()
   #ifdef debug
     delay(1000);
   #endif
-  
+
   
   
 }
