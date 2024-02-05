@@ -242,7 +242,7 @@ void PerlinPlugin::loop()
       #ifdef debug
     Serial.printf("%.2f, ",noiseval);
   #endif
-      noiseval=limit(0.0,noiseval-0.1,1.0);
+      noiseval=limit(0.0,noiseval-0.2,1.0);
       brightness=min(noiseval*noiseval,lim)*255;
        Screen.setPixel(x, y, 1, brightness);
 
